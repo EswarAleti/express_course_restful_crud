@@ -1,6 +1,7 @@
 const express = require("express");
 const { courseRouter } = require("./routers/course.router");
 const mongoose = require("mongoose");
+const { userRouter } = require("./routers/user.router");
 
 const app = express();
 
@@ -14,7 +15,7 @@ mongoose
     .catch((err) => console.log("Could not connect to MongoDB...", err));
 
 app.use("/api/courses", courseRouter);
-app.use("/api/account", courseRouter);
+app.use("/api/account", userRouter);
 const port = process.env.PORT || 3000;
 
 app.listen(port, () => {
