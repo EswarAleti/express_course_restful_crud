@@ -5,8 +5,14 @@ const { CourseModel } = require("../models/course.model");
 router.post("/", async (req, res) => {
     try {
         console.log("request received to insert a new course");
+        if (await CourseModel.findOne({ courseID: req.body.courseID })) {
+            throw new Error(
+                "Course already exists with the courseID " + req.body.courseID
+            );
+        }
         const courseModel = new CourseModel(req.body);
         const course = await courseModel.save();
+
         console.log("successfully inserted a new course");
         res.status(200).send(course);
     } catch (e) {
@@ -17,7 +23,19 @@ router.post("/", async (req, res) => {
 router.get("/", async (req, res) => {
     try {
         console.log("request received to get all courses");
-        const courses = await CourseModel.find();
+        const { name } = req.query;
+        const query = { name };
+        const finalQuery = Object.keys(query).reduce((prev, key) => {
+            if (query[key]) {
+                return {
+                    ...prev,
+                    [key]: query[key],
+                };
+            }
+            return prev;
+        }, {});
+
+        const courses = await CourseModel.find(finalQuery);
         console.log("successfully received all courses");
         res.status(200).json(courses);
     } catch (e) {

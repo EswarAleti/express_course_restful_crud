@@ -14,6 +14,7 @@ mongoose
     .catch((err) => console.log("Could not connect to MongoDB...", err));
 
 app.use("/api/courses", courseRouter);
+app.use("/api/account", courseRouter);
 const port = process.env.PORT || 3000;
 
 app.listen(port, () => {
