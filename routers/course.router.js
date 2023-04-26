@@ -3,9 +3,8 @@ const router = express.Router();
 const { CourseModel } = require("../models/course.model");
 const { validateAuth } = require("../middlewares/auth.middleware");
 
-router.post("/", [validateAuth], async (req, res) => {
+router.post("/", [validateAuth(["admin"])], async (req, res) => {
     try {
-        console.log(req.headers.authorization);
         console.log("request received to insert a new course");
         if (await CourseModel.findOne({ courseID: req.body.courseID })) {
             throw new Error(
@@ -22,7 +21,7 @@ router.post("/", [validateAuth], async (req, res) => {
     }
 });
 
-router.get("/", async (req, res) => {
+router.get("/", [validateAuth(["admin", "user"])], async (req, res) => {
     try {
         console.log("request received to get all courses");
         const { name } = req.query;
@@ -45,7 +44,7 @@ router.get("/", async (req, res) => {
     }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", [validateAuth(["admin", "user"])], async (req, res) => {
     try {
         console.log("request received to get a course");
         const course = await CourseModel.findById(req.params.id);
@@ -61,7 +60,7 @@ router.get("/:id", async (req, res) => {
     }
 });
 
-router.delete("/:id", [validateAuth], async (req, res) => {
+router.delete("/:id", [validateAuth(["admin"])], async (req, res) => {
     try {
         console.log("request received to delete a course");
         const courses = await CourseModel.deleteOne({ _id: req.params.id });
@@ -77,7 +76,7 @@ router.delete("/:id", [validateAuth], async (req, res) => {
     }
 });
 
-router.put("/:id", [validateAuth], async (req, res) => {
+router.put("/:id", [validateAuth(["admin"])], async (req, res) => {
     try {
         console.log("request received to update a course");
         const course = await CourseModel.findByIdAndUpdate(req.params.id, {

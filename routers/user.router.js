@@ -16,12 +16,13 @@ router.post("/register", [validateUser], async (req, res) => {
         if (await UserModel.findOne({ username: req.body.username })) {
             throw new Error("Username already existed!");
         }
-        const { name, username, password } = req.body;
+        const { name, username, password, role } = req.body;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         const userModel = new UserModel({
             name,
             username,
             password: hashedPassword,
+            role,
         });
         await userModel.save();
         console.log("successfully registered a new user");
@@ -49,9 +50,13 @@ router.post("/login", async (req, res) => {
         }
 
         const privateKey = process.env.JWT_PRIVATE_KEY;
-        const token = jwt.sign({ username }, privateKey, {
-            expiresIn: 60 * 60,
-        });
+        const token = jwt.sign(
+            { username: account.username, role: account.role },
+            privateKey,
+            {
+                expiresIn: 60 * 60,
+            }
+        );
 
         res.status(200).json({ token });
 
@@ -65,11 +70,12 @@ router.delete("/:id", [validateAuth], async (req, res) => {
     try {
         console.log("request received to delete an user account");
         const account = await UserModel.deleteOne({ _id: req.params.id });
-        if (account.deleteCount === 0) {
+        console.log(account);
+        if (account.deletedCount === 0) {
             return res.status(400).json({ message: "User not found" });
         }
         console.log("successfully deleted user account");
-        res.status(200).json({ message: "use account deleted successfully" });
+        res.status(200).json({ message: "user account deleted successfully" });
     } catch (e) {
         res.status(500).send({ message: e.message });
     }

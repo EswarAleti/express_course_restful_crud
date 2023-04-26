@@ -16,6 +16,7 @@ const validateUser = (req, res, next) => {
                 .minOfNumeric(1)
                 .noWhiteSpaces()
                 .required(),
+            role: joi.string().required(),
         })
         .validate(req.body);
     if (error) {
