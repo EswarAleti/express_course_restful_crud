@@ -48,8 +48,10 @@ router.post("/login", async (req, res) => {
             throw new Error("Invalid username or password!");
         }
 
-        const privateKey = "aBcD@123";
-        const token = jwt.sign({ username }, privateKey);
+        const privateKey = process.env.JWT_PRIVATE_KEY;
+        const token = jwt.sign({ username }, privateKey, {
+            expiresIn: 60 * 60,
+        });
 
         res.status(200).json({ token });
 
