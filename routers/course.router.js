@@ -1,9 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const { CourseModel } = require("../models/course.model");
+const { validateAuth } = require("../middlewares/auth.middleware");
 
-router.post("/", async (req, res) => {
+router.post("/", [validateAuth], async (req, res) => {
     try {
+        console.log(req.headers.authorization);
         console.log("request received to insert a new course");
         if (await CourseModel.findOne({ courseID: req.body.courseID })) {
             throw new Error(
@@ -59,7 +61,7 @@ router.get("/:id", async (req, res) => {
     }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", [validateAuth], async (req, res) => {
     try {
         console.log("request received to delete a course");
         const courses = await CourseModel.deleteOne({ _id: req.params.id });
@@ -75,7 +77,7 @@ router.delete("/:id", async (req, res) => {
     }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", [validateAuth], async (req, res) => {
     try {
         console.log("request received to update a course");
         const course = await CourseModel.findByIdAndUpdate(req.params.id, {

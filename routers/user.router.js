@@ -5,7 +5,9 @@ const joiPassword = joi.extend(joiPasswordExtendCore);
 const { UserModel } = require("../models/user.model");
 const router = express.Router();
 const bcrypt = require("bcrypt");
+var jwt = require("jsonwebtoken");
 const { validateUser } = require("../middlewares/user.middleware");
+const { validateAuth } = require("../middlewares/auth.middleware");
 const saltRounds = 10;
 
 router.post("/register", [validateUser], async (req, res) => {
@@ -33,7 +35,7 @@ router.post("/login", async (req, res) => {
     try {
         console.log("request received for login");
 
-        const { name, username, password } = req.body;
+        const { username, password } = req.body;
         const account = await UserModel.findOne({
             username: username,
         });
@@ -46,9 +48,26 @@ router.post("/login", async (req, res) => {
             throw new Error("Invalid username or password!");
         }
 
-        res.status(200).json({ isLoggedIn: true });
+        const privateKey = "aBcD@123";
+        const token = jwt.sign({ username }, privateKey);
+
+        res.status(200).json({ token });
 
         console.log("login is successful");
+    } catch (e) {
+        res.status(500).send({ message: e.message });
+    }
+});
+
+router.delete("/:id", [validateAuth], async (req, res) => {
+    try {
+        console.log("request received to delete an user account");
+        const account = await UserModel.deleteOne({ _id: req.params.id });
+        if (account.deleteCount === 0) {
+            return res.status(400).json({ message: "User not found" });
+        }
+        console.log("successfully deleted user account");
+        res.status(200).json({ message: "use account deleted successfully" });
     } catch (e) {
         res.status(500).send({ message: e.message });
     }
