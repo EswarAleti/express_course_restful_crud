@@ -1,30 +1,21 @@
 const express = require("express");
-const joi = require("joi");
-const { joiPasswordExtendCore } = require("joi-password");
-const joiPassword = joi.extend(joiPasswordExtendCore);
-const { UserModel } = require("../models/user.model");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 var jwt = require("jsonwebtoken");
 const { validateUser } = require("../middlewares/user.middleware");
 const { validateAuth } = require("../middlewares/auth.middleware");
-const saltRounds = 10;
+const { StudentService } = require("../services/student.service");
+const { UserService } = require("../services/user.service");
+const { UserModel } = require("../models/user.model");
 
 router.post("/register", [validateUser], async (req, res) => {
     try {
         console.log("request received to register a new user");
-        if (await UserModel.findOne({ username: req.body.username })) {
-            throw new Error("Username already existed!");
-        }
         const { name, username, password, role } = req.body;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-        const userModel = new UserModel({
-            name,
-            username,
-            password: hashedPassword,
-            role,
-        });
-        await userModel.save();
+        const user = await UserService.save({ name, username, password, role });
+        if (role.toLowerCase() === "student") {
+            await StudentService.save({ name, userID: user._id });
+        }
         console.log("successfully registered a new user");
         res.json({ message: "successfully registered" });
     } catch (e) {
